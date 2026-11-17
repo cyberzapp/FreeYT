@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101310">
+  <title>FreeYT</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #101310;
+      --panel: #191d19;
+      --panel-soft: #1f241f;
+      --border: #303730;
+      --text: #f1f4ed;
+      --muted: #a0a99f;
+      --accent: #b8f277;
+      --accent-dark: #182313;
+      --error: #ff9d8f;
+      --blue: #a8d8ff;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: radial-gradient(ellipse at 82% 4%, #293323 0, transparent 35%), var(--background);
+    }
+    .page { width: min(1080px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 64px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: -.02em; }
+    .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #46553c; border-radius: 13px; color: var(--accent); background: #1b2418; }
+    .brand-mark svg { width: 19px; height: 19px; }
+    .local-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 999px; padding: 8px 12px; color: var(--muted); font-size: 12px; }
+    .local-pill::before { content: ""; width: 7px; height: 7px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 12px #b8f27780; }
+    main { width: min(680px, 100%); margin: 86px auto 0; }
+    .eyebrow { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    .eyebrow svg { width: 17px; height: 17px; }
+    h1 { margin: 0; font-size: clamp(34px, 6vw, 56px); line-height: 1.04; letter-spacing: -.055em; }
+    .intro { max-width: 560px; margin: 17px 0 30px; color: var(--muted); font-size: 16px; line-height: 1.65; }
+    .card { border: 1px solid var(--border); border-radius: 21px; padding: 26px; background: linear-gradient(145deg, #1b201b, #171a17); box-shadow: 0 26px 80px #0004; }
+    .field { margin: 0 0 21px; }
+    .field label { display: block; margin-bottom: 9px; color: #dce2d8; font-size: 13px; font-weight: 650; }
+    .input-wrap { position: relative; }
+    input, select { width: 100%; height: 51px; border: 1px solid #3a423a; border-radius: 11px; outline: none; color: var(--text); background: #111411; font: inherit; font-size: 14px; transition: border-color .15s, box-shadow .15s; }
+    input { padding: 0 46px 0 14px; }
+    select { padding: 0 14px; appearance: none; cursor: pointer; }
+    input:focus, select:focus { border-color: #91c75a; box-shadow: 0 0 0 3px #b8f27720; }
+    input::placeholder { color: #717a70; }
+    .paste-button { position: absolute; top: 7px; right: 7px; height: 37px; border: 0; border-radius: 8px; padding: 0 10px; color: #dce5d7; background: #252b25; font: inherit; font-size: 12px; cursor: pointer; }
+    .paste-button:hover { background: #303830; }
+    .folder-row { display: flex; gap: 10px; }
+    .folder-row input { flex: 1; min-width: 0; }
+    .quality-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: ""; position: absolute; top: 20px; right: 17px; width: 8px; height: 8px; border-right: 1.5px solid #acb5a9; border-bottom: 1.5px solid #acb5a9; transform: rotate(45deg); pointer-events: none; }
+    .field-hint { margin: 8px 0 0; color: #818b80; font-size: 12px; line-height: 1.45; }
+    .notice { display: flex; gap: 11px; margin: 3px 0 21px; padding: 13px 14px; border: 1px solid #384533; border-radius: 10px; color: #c6d3bd; background: #20271d; font-size: 12px; line-height: 1.5; }
+    .notice svg { flex: 0 0 auto; width: 16px; height: 16px; margin-top: 1px; color: var(--accent); }
+    .primary-button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 52px; border: 0; border-radius: 11px; color: #172011; background: var(--accent); font: inherit; font-size: 15px; font-weight: 750; cursor: pointer; transition: background .15s, transform .15s; }
+    .primary-button:hover { background: #c8ff88; transform: translateY(-1px); }
+    .primary-button:disabled { opacity: .65; cursor: wait; transform: none; }
+    .primary-button svg { width: 18px; height: 18px; }
+    .result { display: none; margin-top: 17px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: #121512; }
+    .result.visible { display: block; }
+    .result-top { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 11px; }
+    .result-message { color: #e7ece3; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+    .result-meta { flex: 0 0 auto; color: var(--muted); font-size: 12px; text-align: right; }
+    .progress-track { height: 7px; overflow: hidden; border-radius: 99px; background: #2b312a; }
+    .progress-value { width: 0; height: 100%; border-radius: inherit; background: var(--accent); transition: width .3s ease; }
+    .result.error .result-message { color: var(--error); }
+    .result.error .progress-value { background: var(--error); }
+    .result.success .progress-value { background: var(--accent); }
+    .result-hint { margin-top: 11px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .status-line { display: flex; align-items: center; gap: 8px; margin: 18px 2px 0; color: #869084; font-size: 12px; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #e8bb68; }
+    .status-line.ready .status-dot { background: var(--accent); }
+    .status-line.error .status-dot { background: var(--error); }
+    footer { display: flex; justify-content: space-between; gap: 18px; margin-top: 54px; padding-top: 19px; border-top: 1px solid #293029; color: #778075; font-size: 11px; line-height: 1.5; }
+    footer a { color: #a9b3a6; text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+    .studio-panel { margin-top: 20px; overflow: hidden; border: 1px solid var(--border); border-radius: 18px; background: #171b17; }
+    .studio-panel > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 19px 21px; color: var(--text); font-size: 14px; font-weight: 700; cursor: pointer; list-style: none; }
+    .studio-panel > summary::-webkit-details-marker { display: none; }
+    .studio-panel > summary::after { content: "+"; color: var(--accent); font-size: 20px; font-weight: 400; }
+    .studio-panel[open] > summary::after { content: "−"; }
+    .studio-body { padding: 0 21px 22px; border-top: 1px solid var(--border); }
+    .studio-intro { margin: 16px 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .studio-drop { display: grid; justify-items: center; gap: 10px; padding: 20px 14px; border: 1px dashed #485446; border-radius: 13px; background: #141814; text-align: center; transition: border-color .15s, background .15s; }
+    .studio-drop.dragging { border-color: var(--accent); background: #1d2619; }
+    .studio-drop strong { font-size: 14px; }
+    .studio-small { color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .studio-secondary { min-height: 38px; border: 1px solid #465044; border-radius: 9px; padding: 0 13px; color: #e6ede2; background: #252c24; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+    .studio-secondary:hover { background: #303a2e; }
+    #studio-file-input { display: none; }
+    .studio-section-title { margin: 19px 0 10px; color: #dce2d8; font-size: 12px; font-weight: 700; }
+    .studio-mode-grid, .studio-quality-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .studio-mode-button, .studio-quality-button { min-height: 64px; border: 1px solid #343d33; border-radius: 10px; padding: 10px; color: #e8eee4; background: #141814; font: inherit; text-align: left; cursor: pointer; }
+    .studio-mode-button strong, .studio-quality-button strong { display: block; font-size: 11px; }
+    .studio-mode-button span, .studio-quality-button span { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .studio-mode-button.active, .studio-quality-button.active { border-color: #8bbf58; background: #20291b; }
+    .studio-settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .studio-field label, .studio-range-label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 7px; color: #dce2d8; font-size: 12px; font-weight: 600; }
+    .studio-field select, .studio-field input[type="text"] { height: 43px; font-size: 12px; }
+    .studio-enhancements { margin-top: 14px; border: 1px solid #303830; border-radius: 12px; padding: 14px; background: #141814; }
+    .studio-presets { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 15px; }
+    .studio-preset { min-height: 32px; border: 1px solid #3a4339; border-radius: 8px; padding: 0 10px; color: #dce5d7; background: #202520; font: inherit; font-size: 11px; cursor: pointer; }
+    .studio-preset:hover { border-color: #758d66; }
+    .studio-filter { margin: 13px 0; }
+    .studio-range { width: 100%; height: 18px !important; margin: 0; padding: 0 !important; border: 0 !important; background: transparent !important; accent-color: var(--accent); }
+    .studio-checkbox-row { display: flex; align-items: center; gap: 9px; color: #dce2d8; font-size: 12px; }
+    .studio-checkbox-row input { width: 16px; height: 16px; padding: 0; border: 0; background: transparent; accent-color: var(--accent); }
+    .studio-quality-button { min-height: 58px; }
+    .studio-folder { margin-top: 14px; }
+    .studio-start { margin-top: 15px; }
+    .studio-progress { margin-top: 14px; padding: 14px; border: 1px solid #343d33; border-radius: 11px; background: #121512; }
+    .studio-progress-message { margin-bottom: 9px; color: #e7ece3; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+    .studio-progress-meta { margin-top: 8px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+    .studio-progress.error .studio-progress-message { color: var(--error); }
+    .studio-progress.error .progress-value { background: var(--error); }
+    .studio-link { display: inline-block; margin-top: 10px; color: var(--accent); font-size: 12px; font-weight: 650; }
+    .studio-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .studio-preview-card { min-width: 0; border: 1px solid #313a30; border-radius: 10px; padding: 9px; background: #111411; }
+    .studio-preview-card label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .studio-preview-card video { display: block; width: 100%; max-height: 220px; border-radius: 6px; background: #050605; }
+    @media (max-width: 620px) {
+      .page { width: min(100% - 28px, 680px); padding-top: 18px; }
+      main { margin-top: 59px; }
+      .card { padding: 20px 16px; }
+      .quality-row { grid-template-columns: 1fr; gap: 0; }
+      footer { flex-direction: column; gap: 8px; }
+      .result-top { flex-direction: column; gap: 5px; }
+      .result-meta { text-align: left; }
+      .studio-body { padding: 0 14px 16px; }
+      .studio-mode-grid, .studio-quality-grid { grid-template-columns: 1fr; }
+      .studio-settings-grid, .studio-preview-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg></span>
+        <span>FreeYT</span>
+      </div>
+      <div class="local-pill">Runs on this computer</div>
+    </header>
+
+    <main>
+      <div class="eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none"/></svg> Your local download tool</div>
+      <h1>Save a video<br>for later.</h1>
+      <p class="intro">Paste a YouTube link, choose a quality and save the video to a folder on your PC. Your downloads stay on your computer.</p>
+
+      <section class="card" aria-label="Video download form">
+        <form id="download-form">
+          <div class="field">
+            <label for="video-url">YouTube video link</label>
+            <div class="input-wrap">
+              <input id="video-url" name="url" type="url" autocomplete="url" spellcheck="false" placeholder="https://youtu.be/..." required>
+              <button class="paste-button" id="paste-button" type="button">Paste</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="folder">Save to folder</label>
+            <div class="folder-row">
+              <input id="folder" name="folder" type="text" autocomplete="off" spellcheck="false" placeholder="C:\Users\You\Downloads" required>
+            </div>
+            <p class="field-hint">Enter a folder path on this computer. The folder will be created if needed.</p>
+          </div>
+
+          <div class="field">
+            <label for="quality">Video quality</label>
+            <div class="select-wrap">
+              <select id="quality" name="quality">
+                <option value="best">Best available</option>
+                <option value="1080">Up to 1080p</option>
+                <option value="720">Up to 720p</option>
+                <option value="480">Up to 480p</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="notice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>
+            <span>Only save videos you own or have permission to download. Please respect YouTube’s terms and copyright.</span>
+          </div>
+
+          <button class="primary-button" id="download-button" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
+            <span id="download-button-label">Download video</span>
+          </button>
+        </form>
+
+        <div class="result" id="result" role="status" aria-live="polite">
+          <div class="result-top">
+            <div class="result-message" id="result-message"></div>
+            <div class="result-meta" id="result-meta"></div>
+          </div>
+          <div class="progress-track"><div class="progress-value" id="progress-value"></div></div>
+          <div class="result-hint" id="result-hint"></div>
+        </div>
+        <div class="status-line" id="health-status"><span class="status-dot"></span><span>Checking local downloader…</span></div>
+      </section>
+
+      <details class="studio-panel" id="studio-panel">
+        <summary><span>Convert or enhance a video on this PC</span><span class="studio-small">WEBM / MP4 · local FFmpeg</span></summary>
+        <div class="studio-body">
+          <p class="studio-intro">Convert WEBM to MP4, upscale up to 4K, and adjust clarity, color, and noise. Video files are processed by the local app on this computer.</p>
+
+          <div class="studio-drop" id="studio-drop">
+            <strong>Choose or drop a WEBM or MP4 video</strong>
+            <button class="studio-secondary" id="studio-browse" type="button">Select video</button>
+            <span class="studio-small" id="studio-file-name">No video selected · Maximum file size 8 GB</span>
+            <input id="studio-file-input" type="file" accept=".webm,.mp4,video/webm,video/mp4">
+          </div>
+
+          <div id="studio-source-preview-area" hidden>
+            <div class="studio-section-title">Source preview</div>
+            <video id="studio-source-preview" controls playsinline></video>
+            <p class="studio-small" id="studio-metadata"></p>
+          </div>
+
+          <div class="studio-section-title">Processing mode</div>
+          <div class="studio-mode-grid" id="studio-mode-grid">
+            <button class="studio-mode-button" type="button" data-studio-mode="convert"><strong>Convert format</strong><span>MP4/H.264 · preserve dimensions</span></button>
+            <button class="studio-mode-button" type="button" data-studio-mode="enhance"><strong>Enhance only</strong><span>Keep WEBM or MP4, or choose MP4</span></button>
+            <button class="studio-mode-button active" type="button" data-studio-mode="both"><strong>Convert + enhance</strong><span>MP4 · upscale and apply clarity filters</span></button>
+          </div>
+
+          <div class="studio-settings-grid">
+            <div class="studio-field">
+              <label for="studio-container">Output format</label>
+              <div class="select-wrap"><select id="studio-container"><option value="keep">Keep source format</option><option value="mp4">MP4 (H.264)</option></select></div>
+            </div>
+            <div class="studio-field">
+              <label for="studio-resolution">Target resolution</label>
+              <div class="select-wrap">
+                <select id="studio-resolution">
+                  <option value="original">Original resolution</option>
+                  <option value="720p">720p HD</option>
+                  <option value="1080p" selected>1080p Full HD</option>
+                  <option value="1440p">1440p 2K QHD</option>
+                  <option value="2160p">2160p 4K UHD</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <fieldset class="studio-enhancements" id="studio-enhancements">
+            <legend class="studio-section-title">Definition & clarity</legend>
+            <div class="studio-presets">
+              <button class="studio-preset" type="button" data-studio-preset="natural">Clean & smooth</button>
+              <button class="studio-preset" type="button" data-studio-preset="crisp">Crisp HD</button>
+              <button class="studio-preset" type="button" data-studio-preset="cinema">Ultra detail</button>
+              <button class="studio-preset" type="button" id="studio-reset-filters">Reset</button>
+            </div>
+            <div class="studio-filter">
+              <label class="studio-range-label" for="studio-sharpen"><span>Edge sharpening</span><output id="studio-sharpen-value">45%</output></label>
+              <input class="studio-range" id="studio-sharpen" type="range" min="0" max="100" value="45">
+            </div>
+            <div class="studio-filter">
+              <label class="studio-range-label" for="studio-contrast"><span>Contrast</span><output id="studio-contrast-value">30%</output></label>
+              <input class="studio-range" id="studio-contrast" type="range" min="0" max="100" value="30">
+            </div>
+            <div class="studio-filter">
+              <label class="studio-range-label" for="studio-vibrance"><span>Color vibrance</span><output id="studio-vibrance-value">20%</output></label>
+              <input class="studio-range" id="studio-vibrance" type="range" min="0" max="100" value="20">
+            </div>
+            <label class="studio-checkbox-row"><input id="studio-denoise" type="checkbox" checked> Reduce noise and compression blocks</label>
+          </fieldset>
+
+          <div class="studio-section-title">Encoding quality</div>
+          <div class="studio-quality-grid" id="studio-quality-grid">
+            <button class="studio-quality-button" type="button" data-studio-quality="compact"><strong>Compact</strong><span>8 Mbps · smaller file</span></button>
+            <button class="studio-quality-button active" type="button" data-studio-quality="balanced"><strong>Balanced</strong><span>18 Mbps · recommended</span></button>
+            <button class="studio-quality-button" type="button" data-studio-quality="master"><strong>Master</strong><span>35 Mbps · larger file</span></button>
+          </div>
+
+          <div class="studio-field studio-folder">
+            <label for="studio-folder">Save processed video to</label>
+            <input id="studio-folder" type="text" autocomplete="off" spellcheck="false" placeholder="C:\Users\You\Downloads">
+          </div>
+          <p class="studio-small">4K and Master settings can take longer and create large files. Upscaling increases dimensions; it cannot restore detail missing from the source.</p>
+          <button class="primary-button studio-start" id="studio-start" type="button" disabled>Choose a video to continue</button>
+
+          <div class="studio-progress" id="studio-progress" hidden>
+            <div class="studio-progress-message" id="studio-progress-message"></div>
+            <div class="progress-track"><div class="progress-value" id="studio-progress-value"></div></div>
+            <div class="studio-progress-meta" id="studio-progress-meta"></div>
+            <a class="studio-link" id="studio-download-copy" hidden>Download a browser copy</a>
+            <div class="studio-preview-grid" id="studio-preview-grid" hidden>
+              <div class="studio-preview-card"><label>Original</label><video id="studio-before" controls playsinline></video></div>
+              <div class="studio-preview-card"><label>Processed</label><video id="studio-after" controls playsinline></video></div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <footer>
+        <span>Runs entirely on your PC. Your link and download folder are handled by the local app.</span>
+        <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer">YouTube Terms</a>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const exampleUrl = "https://www.youtube.com/watch?v=jNQXAC9IVRw";
+    const form = document.querySelector("#download-form");
+    const urlInput = document.querySelector("#video-url");
+    const folderInput = document.querySelector("#folder");
+    const button = document.querySelector("#download-button");
+    const buttonLabel = document.querySelector("#download-button-label");
+    const result = document.querySelector("#result");
+    const resultMessage = document.querySelector("#result-message");
+    const resultMeta = document.querySelector("#result-meta");
+    const resultHint = document.querySelector("#result-hint");
+    const progressValue = document.querySelector("#progress-value");
+    const healthStatus = document.querySelector("#health-status");
+    const studioFileInput = document.querySelector("#studio-file-input");
+    const studioDrop = document.querySelector("#studio-drop");
+    const studioFileName = document.querySelector("#studio-file-name");
+    const studioSourcePreviewArea = document.querySelector("#studio-source-preview-area");
+    const studioSourcePreview = document.querySelector("#studio-source-preview");
+    const studioContainer = document.querySelector("#studio-container");
+    const studioFolder = document.querySelector("#studio-folder");
+    const studioStart = document.querySelector("#studio-start");
+    const studioProgress = document.querySelector("#studio-progress");
+    const studioProgressMessage = document.querySelector("#studio-progress-message");
+    const studioProgressMeta = document.querySelector("#studio-progress-meta");
+    const studioProgressValue = document.querySelector("#studio-progress-value");
+    const studioDownloadCopy = document.querySelector("#studio-download-copy");
+    const studioPreviewGrid = document.querySelector("#studio-preview-grid");
+    const studioBefore = document.querySelector("#studio-before");
+    const studioAfter = document.querySelector("#studio-after");
+    let pollingTimer;
+    let busy = false;
+    let studioFile = null;
+    let studioFileUrl = null;
+    let studioMode = "both";
+    let studioQuality = "balanced";
+    let studioEnhanceContainer = "keep";
+    let studioBusy = false;
+
+    urlInput.value = exampleUrl;
+
+    [urlInput, folderInput, studioFolder].forEach((input) => {
+      input.addEventListener("input", () => {
+        input.dataset.dirty = "1";
+      });
+    });
+    studioContainer.addEventListener("change", () => {
+      if (studioMode === "enhance") studioEnhanceContainer = studioContainer.value;
+    });
+
+    function connectionHelp() {
+      if (window.location.protocol === "file:") {
+        return "This page was opened directly as a file. Run start.bat, then open http://127.0.0.1:8765.";
+      }
+      return "The local downloader is not running. Run start.bat, keep its window open, then reload this page.";
+    }
+
+    function showResult(message, { percent = 0, meta = "", hint = "", state = "" } = {}) {
+      result.className = `result visible ${state}`;
+      resultMessage.textContent = message;
+      resultMeta.textContent = meta;
+      resultHint.textContent = hint;
+      progressValue.style.width = `${Math.max(0, Math.min(100, percent || 0))}%`;
+    }
+
+    async function checkHealth() {
+      if (window.location.protocol === "file:") {
+        healthStatus.classList.add("error");
+        healthStatus.lastElementChild.textContent = connectionHelp();
+        return;
+      }
+      try {
+        const response = await fetch("/api/health");
+        const data = await response.json();
+        if (data.default_url && !urlInput.dataset.dirty) urlInput.value = data.default_url;
+        if (data.default_folder) {
+          if (!folderInput.dataset.dirty) folderInput.value = data.default_folder;
+          if (!studioFolder.dataset.dirty) studioFolder.value = data.default_folder;
+        }
+        healthStatus.classList.remove("error", "ready");
+        if (!data.yt_dlp) {
+          healthStatus.classList.add("error");
+          healthStatus.lastElementChild.textContent = "Setup needed: start.bat will install the downloader.";
+        } else {
+          healthStatus.classList.add("ready");
+          healthStatus.lastElementChild.textContent = data.ffmpeg && data.ffprobe
+            ? "Ready · downloader and local video studio available"
+            : "Downloader ready · install FFmpeg to enable the video studio";
+        }
+      } catch {
+        healthStatus.classList.add("error");
+        healthStatus.lastElementChild.textContent = connectionHelp();
+      }
+    }
+
+    document.querySelector("#paste-button").addEventListener("click", async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          urlInput.value = text.trim();
+          urlInput.dataset.dirty = "1";
+        }
+      } catch {
+        urlInput.focus();
+      }
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (busy) return;
+      busy = true;
+      button.disabled = true;
+      buttonLabel.textContent = "Starting download…";
+      result.className = "result";
+      resultHint.textContent = "";
+      try {
+        const response = await fetch("/api/download", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: urlInput.value.trim(),
+            folder: folderInput.value.trim(),
+            quality: document.querySelector("#quality").value,
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Could not start the download.");
+        showResult("Connecting to YouTube…", { hint: "Keep this window open while the video downloads." });
+        pollStatus(data.id);
+      } catch (error) {
+        const message = error instanceof TypeError ? connectionHelp() : error.message;
+        showResult(message || "Something went wrong. Check the link and try again.", { state: "error" });
+        busy = false;
+        button.disabled = false;
+        buttonLabel.textContent = "Try again";
+      }
+    });
+
+    async function pollStatus(id) {
+      clearTimeout(pollingTimer);
+      try {
+        const response = await fetch(`/api/status?id=${encodeURIComponent(id)}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Download status is unavailable.");
+        const meta = [data.progress != null ? `${data.progress}%` : "", data.speed || "", data.eta ? `ETA ${data.eta}` : ""]
+          .filter(Boolean).join(" · ");
+        const state = data.state === "error" ? "error" : data.state === "done" ? "success" : "";
+        const hint = data.state === "done"
+          ? "Your video is ready in the selected folder."
+          : data.state === "error"
+            ? "Check the video link, folder permissions and connection, then try again."
+            : "Keep this window open while the video downloads.";
+        showResult(data.message, { percent: data.progress, meta, hint, state });
+        if (["done", "error"].includes(data.state)) {
+          busy = false;
+          button.disabled = false;
+          buttonLabel.textContent = data.state === "error" ? "Try again" : "Download another video";
+          return;
+        }
+        pollingTimer = setTimeout(() => pollStatus(id), 800);
+      } catch (error) {
+        const message = error instanceof TypeError ? connectionHelp() : error.message;
+        showResult(message || "Could not check the download status.", { state: "error" });
+        busy = false;
+        button.disabled = false;
+        buttonLabel.textContent = "Try again";
+      }
+    }
+
+    function updateStudioStatus(message, { percent = 0, meta = "", error = false } = {}) {
+      studioProgress.hidden = false;
+      studioProgress.classList.toggle("error", error);
+      studioProgressMessage.textContent = message;
+      studioProgressMeta.textContent = meta;
+      studioProgressValue.style.width = `${Math.max(0, Math.min(100, percent || 0))}%`;
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+      if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+      return `${(bytes / 1024).toFixed(0)} KB`;
+    }
+
+    function rejectStudioFile(message) {
+      studioFile = null;
+      if (studioFileUrl) URL.revokeObjectURL(studioFileUrl);
+      studioFileUrl = null;
+      studioSourcePreview.pause();
+      studioSourcePreview.removeAttribute("src");
+      studioSourcePreview.load();
+      studioSourcePreviewArea.hidden = true;
+      studioFileName.textContent = "No video selected · Maximum file size 8 GB";
+      studioStart.disabled = true;
+      updateStudioStatus(message, { error: true });
+    }
+
+    function setStudioFile(file) {
+      if (!file || studioBusy) return;
+      if (!/\.(webm|mp4)$/i.test(file.name)) {
+        rejectStudioFile("Choose a WEBM or MP4 video file.");
+        return;
+      }
+      if (file.size > 8 * 1024 ** 3) {
+        rejectStudioFile("This file is larger than the 8 GB limit.");
+        return;
+      }
+      studioFile = file;
+      if (studioFileUrl) URL.revokeObjectURL(studioFileUrl);
+      studioFileUrl = URL.createObjectURL(file);
+      studioSourcePreview.src = studioFileUrl;
+      studioSourcePreviewArea.hidden = false;
+      studioFileName.textContent = `${file.name} · ${formatFileSize(file.size)}`;
+      const metadataLabel = document.querySelector("#studio-metadata");
+      metadataLabel.textContent = "Reading video details…";
+      studioSourcePreview.onloadedmetadata = () => {
+        const duration = Number.isFinite(studioSourcePreview.duration) ? `${Math.floor(studioSourcePreview.duration / 60)}:${String(Math.floor(studioSourcePreview.duration % 60)).padStart(2, "0")}` : "duration unavailable";
+        metadataLabel.textContent = `${studioSourcePreview.videoWidth} × ${studioSourcePreview.videoHeight} · ${duration} · ${formatFileSize(file.size)}`;
+      };
+      studioSourcePreview.onerror = () => {
+        metadataLabel.textContent = `Browser preview unavailable · ${formatFileSize(file.size)} · local FFmpeg can still process this video`;
+      };
+      studioPreviewGrid.hidden = true;
+      studioDownloadCopy.hidden = true;
+      studioAfter.removeAttribute("src");
+      studioStart.disabled = false;
+      studioStart.textContent = "Process video locally";
+      studioProgress.hidden = true;
+    }
+
+    document.querySelector("#studio-browse").addEventListener("click", () => {
+      if (!studioBusy) studioFileInput.click();
+    });
+    studioFileInput.addEventListener("change", () => setStudioFile(studioFileInput.files[0]));
+    studioDrop.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      if (!studioBusy) studioDrop.classList.add("dragging");
+    });
+    studioDrop.addEventListener("dragleave", () => studioDrop.classList.remove("dragging"));
+    studioDrop.addEventListener("drop", (event) => {
+      event.preventDefault();
+      studioDrop.classList.remove("dragging");
+      setStudioFile(event.dataTransfer.files[0]);
+    });
+
+    function setStudioMode(mode) {
+      studioMode = mode;
+      document.querySelectorAll("[data-studio-mode]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.studioMode === mode);
+      });
+      const resolutionSelect = document.querySelector("#studio-resolution");
+      const enhancements = document.querySelector("#studio-enhancements");
+      studioContainer.disabled = mode !== "enhance";
+      resolutionSelect.disabled = mode === "convert";
+      enhancements.disabled = mode === "convert";
+      studioContainer.value = mode === "enhance" ? studioEnhanceContainer : "mp4";
+    }
+
+    document.querySelectorAll("[data-studio-mode]").forEach((button) => {
+      button.addEventListener("click", () => setStudioMode(button.dataset.studioMode));
+    });
+    setStudioMode("both");
+
+    function updateStudioSlider(inputId, outputId, suffix = "%") {
+      const input = document.querySelector(inputId);
+      document.querySelector(outputId).textContent = `${input.value}${suffix}`;
+    }
+
+    ["sharpen", "contrast", "vibrance"].forEach((name) => {
+      document.querySelector(`#studio-${name}`).addEventListener("input", () => updateStudioSlider(`#studio-${name}`, `#studio-${name}-value`));
+    });
+
+    const studioPresets = {
+      natural: { sharpen: 20, contrast: 12, vibrance: 10, denoise: true },
+      crisp: { sharpen: 45, contrast: 30, vibrance: 20, denoise: true },
+      cinema: { sharpen: 70, contrast: 48, vibrance: 35, denoise: true },
+    };
+
+    function applyStudioPreset(name) {
+      const preset = studioPresets[name];
+      if (!preset) return;
+      for (const key of ["sharpen", "contrast", "vibrance"]) {
+        document.querySelector(`#studio-${key}`).value = preset[key];
+        updateStudioSlider(`#studio-${key}`, `#studio-${key}-value`);
+      }
+      document.querySelector("#studio-denoise").checked = preset.denoise;
+    }
+
+    document.querySelectorAll("[data-studio-preset]").forEach((button) => {
+      button.addEventListener("click", () => applyStudioPreset(button.dataset.studioPreset));
+    });
+    document.querySelector("#studio-reset-filters").addEventListener("click", () => applyStudioPreset("crisp"));
+
+    document.querySelectorAll("[data-studio-quality]").forEach((button) => {
+      button.addEventListener("click", () => {
+        studioQuality = button.dataset.studioQuality;
+        document.querySelectorAll("[data-studio-quality]").forEach((item) => item.classList.toggle("active", item === button));
+      });
+    });
+
+    async function pollStudioJob(id) {
+      try {
+        const response = await fetch(`/api/status?id=${encodeURIComponent(id)}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Processing status is unavailable.");
+        const outputLocation = data.output_path && data.output_name
+          ? `${data.output_path.replace(/[\\/]+$/, "")}\\${data.output_name}`
+          : "";
+        const meta = [data.progress != null ? `${data.progress}%` : "", data.eta ? `ETA ${data.eta}` : "", outputLocation]
+          .filter(Boolean).join(" · ");
+        const failed = data.state === "error";
+        updateStudioStatus(data.message, { percent: data.progress, meta, error: failed });
+        if (data.state === "done") {
+          const outputUrl = `/api/output?id=${encodeURIComponent(id)}`;
+          studioBefore.src = studioFileUrl;
+          studioAfter.src = outputUrl;
+          studioPreviewGrid.hidden = false;
+          studioDownloadCopy.href = outputUrl;
+          studioDownloadCopy.download = data.output_name;
+          studioDownloadCopy.hidden = false;
+          studioBusy = false;
+          studioStart.disabled = false;
+          studioStart.textContent = "Process another video";
+          return;
+        }
+        if (failed) {
+          studioBusy = false;
+          studioStart.disabled = false;
+          studioStart.textContent = "Try processing again";
+          return;
+        }
+        setTimeout(() => pollStudioJob(id), 900);
+      } catch (error) {
+        updateStudioStatus(error.message || "Could not check processing status.", { error: true });
+        studioBusy = false;
+        studioStart.disabled = false;
+      }
+    }
+
+    studioStart.addEventListener("click", () => {
+      if (!studioFile || studioBusy) return;
+      if (!studioFolder.value.trim()) {
+        updateStudioStatus("Choose a folder for the processed video.", { error: true });
+        return;
+      }
+      studioBusy = true;
+      studioStart.disabled = true;
+      studioStart.textContent = "Sending video to local processor…";
+      studioProgress.hidden = false;
+      studioPreviewGrid.hidden = true;
+      studioDownloadCopy.hidden = true;
+      updateStudioStatus("Sending the video to the local processor…", { percent: 0, meta: "Upload stays on this computer." });
+
+      const settings = new URLSearchParams({
+        filename: studioFile.name,
+        folder: studioFolder.value.trim(),
+        mode: studioMode,
+        resolution: document.querySelector("#studio-resolution").value,
+        container: studioContainer.value,
+        quality: studioQuality,
+        sharpen: document.querySelector("#studio-sharpen").value,
+        contrast: document.querySelector("#studio-contrast").value,
+        vibrance: document.querySelector("#studio-vibrance").value,
+        denoise: document.querySelector("#studio-denoise").checked ? "1" : "0",
+      });
+      const request = new XMLHttpRequest();
+      request.open("POST", `/api/process?${settings.toString()}`);
+      request.setRequestHeader("Content-Type", "application/octet-stream");
+      request.upload.onprogress = (event) => {
+        if (!event.lengthComputable) return;
+        const percent = Math.round(event.loaded * 100 / event.total);
+        updateStudioStatus("Sending the video to the local processor…", { percent, meta: `Uploading ${percent}% · the file remains on this PC.` });
+      };
+      request.upload.onload = () => {
+        updateStudioStatus("Video received. Preparing local processing…", { percent: 100, meta: "Starting FFmpeg…" });
+      };
+      request.onload = () => {
+        let data = {};
+        try { data = JSON.parse(request.responseText); } catch {}
+        if (request.status < 200 || request.status >= 300) {
+          updateStudioStatus(data.error || "Could not start local video processing.", { error: true });
+          studioBusy = false;
+          studioStart.disabled = false;
+          studioStart.textContent = "Try processing again";
+          return;
+        }
+        studioStart.textContent = "Processing video…";
+        pollStudioJob(data.id);
+      };
+      request.onerror = () => {
+        updateStudioStatus(connectionHelp(), { error: true });
+        studioBusy = false;
+        studioStart.disabled = false;
+        studioStart.textContent = "Try processing again";
+      };
+      request.send(studioFile);
+    });
+
+    checkHealth();
+  </script>
+</body>
+</html>
